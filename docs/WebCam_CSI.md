@@ -65,7 +65,7 @@
         }
     ```
 
-* index landing page callback to read camera source and publish camera image
+* index landing page callback 
     
   ```
     static esp_err_t index_handler(httpd_req_t *req){
@@ -80,7 +80,9 @@
     ```
 
 * streaming of camera source
-    
+  + `fb = esp_camera_fb_get();` : Grab camera image frame buffer
+  + `frame2jpg(fb, 80, &_jpg_buf, &_jpg_buf_len)` : convert a frame buffer to jpg format
+  + `res = httpd_resp_send_chunk(req, (const char *)_jpg_buf, _jpg_buf_len);` : publish frame image
     ```
     static esp_err_t stream_handler(httpd_req_t *req){
         camera_fb_t * fb = NULL;
@@ -88,3 +90,26 @@
         size_t _jpg_buf_len = 0;
     
     ```
+  
+* capture image of camera source
+  + `fb = esp_camera_fb_get();` : Grab camera image frame buffer
+  + `res = httpd_resp_send(req, (const char *)fb->buf, fb->len);` : publish 
+    ```
+    static esp_err_t capture_handler(httpd_req_t *req){
+        camera_fb_t * fb = NULL;
+        esp_err_t res = ESP_OK;
+        int64_t fr_start = esp_timer_get_time();
+    
+        fb = esp_camera_fb_get();
+        if (!fb) {
+            Serial.println("Camera capture failed");
+            httpd_resp_send_500(req);
+            return ESP_FAIL;
+        }
+    ...
+    }
+    
+    ``` 
+    
+* Browser Page using ESP WebServer Library
+![](./images/browser.png) 
